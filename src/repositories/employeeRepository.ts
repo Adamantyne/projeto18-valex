@@ -6,11 +6,15 @@ export interface Employee {
   cpf: string;
   email: string;
   companyId: number;
+  companyKey: string;
 }
 
 export async function findById(id: number) {
   const result = await connection.query<Employee, [number]>(
-    "SELECT * FROM employees WHERE id=$1",
+    `SELECT employees.*,companies.name,companies."apiKey" as "companyKey"
+    FROM employees 
+    JOIN companies ON employees."companyId" = companies.id
+    WHERE employees.id=$1`,
     [id]
   );
 
