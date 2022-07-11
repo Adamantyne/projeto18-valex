@@ -1,12 +1,23 @@
 import { Router } from "express";
 
-import { postCard, activeCard,blockCard,unlockCard } from "../controllers/cardController.js";
-import { postCardSchema, activeCardSchema,blockCardSchema } from "../schemas/cardSchema.js";
+import {
+  postCard,
+  activeCard,
+  blockCard,
+  unlockCard,
+  balanceCard,
+} from "../controllers/cardController.js";
+import {
+  postCardSchema,
+  activeCardSchema,
+  blockCardSchema,
+} from "../schemas/cardSchema.js";
 import {
   postCardMiddleware,
   activeCardMiddleware,
   blobkCardMiddleware,
-  unlockCardMiddleware
+  unlockCardMiddleware,
+  balanceMiddleware,
 } from "../middlewares/cardMiddlewares.js";
 import validateSchema from "../middlewares/schemaValidator.js";
 
@@ -37,5 +48,7 @@ cardRouter.post(
   unlockCardMiddleware,
   unlockCard
 );
+
+cardRouter.get("/balance-card", balanceMiddleware, balanceCard);
 
 export default cardRouter;

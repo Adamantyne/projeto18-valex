@@ -2,6 +2,9 @@ import dotenv from "dotenv";
 import dayjs from "dayjs";
 import bcrypt from "bcrypt";
 
+import { findByCardId as findPayments} from "../repositories/paymentRepository.js";
+import { findByCardId as findRecharge} from "../repositories/rechargeRepository.js";
+
 dotenv.config();
 
 import {
@@ -106,23 +109,19 @@ function activeCardValidate(cardData: Card, CVV: string) {
 
 
 
-function blockCardValidate(
+function authCardValidate(
   cardData: Card,
-  password: string,
-  block: boolean
+  password: string
 ) {
   const validPassword = bcrypt.compareSync(password, cardData.password);
   const todayDate = dayjs().format("MM/YY");
   if (
-    cardData.isBlocked === block ||
     !validPassword ||
     todayDate > cardData.expirationDate
   ) {
     let errorMessage = "";
-    if (cardData.isBlocked === block)
-      errorMessage += `card already ${block ? "blocked" : "unlocked"} /`;
     if (todayDate > cardData.expirationDate)
-      errorMessage += `card already expired /`;
+      errorMessage = `card already expired /`;
     if (!validPassword) errorMessage = `invalid password /`;
 
     throw {
@@ -133,11 +132,46 @@ function blockCardValidate(
   return;
 }
 
+function blockCardValidate(cardData: Card,block: boolean){
+  if (
+    cardData.isBlocked === block
+  ) {
 
+    throw {
+      type: "Unauthorized",
+      message: `card already ${block ? "blocked" : "unlocked"} /`,
+    };
+  }
+}
 
 async function blockService(id:number,password:string,block:boolean) {
-  const cardData = await cardServices.validateCardId(id);
-  cardServices.blockCardValidate(cardData, password,block);
+  const cardData = await validateCardId(id);
+  authCardValidate(cardData, password);
+  blockCardValidate(cardData,block);
+}
+
+
+
+async function balanceService(id:number) {
+
+  const transactions = await findPayments(id);
+  const recharges = await findRecharge(id);
+
+  let balanceIn=0;
+  let balanceOut=0;
+
+  transactions.forEach(transaction => {
+    balanceOut -= transaction.amount;
+  });
+  recharges.forEach(recharge => {
+    balanceIn += recharge.amount;
+  });
+  
+  const balance = balanceIn - balanceOut;
+
+  return{
+    balance,transactions,recharges
+  }
 }
 
 
@@ -149,7 +183,9 @@ const cardServices = {
   validateCardId,
   activeCardValidate,
   blockCardValidate,
-  blockService
+  authCardValidate,
+  blockService,
+  balanceService
 };
 
 export default cardServices;

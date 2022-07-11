@@ -12,6 +12,7 @@ export async function postCard(req: Request, res: Response) {
   return res.status(201).send("card was created");
 }
 
+
 export async function activeCard(req: Request, res: Response) {
   const { id, encryptPassword }: { id: number; encryptPassword: string } =
     res.locals.updateData;
@@ -21,6 +22,7 @@ export async function activeCard(req: Request, res: Response) {
   return res.status(201).send("card actived");
 }
 
+
 export async function blockCard(req: Request, res: Response) {
   const { id }: { id: number } = res.locals.cardId;
   
@@ -29,10 +31,18 @@ export async function blockCard(req: Request, res: Response) {
   return res.status(201).send("card blocked");
 }
 
+
 export async function unlockCard(req: Request, res: Response) {
   const { id }: { id: number } = res.locals.cardId;
   
   await update(id, { isBlocked: false });
 
   return res.status(201).send("card unlocked");
+}
+
+
+export async function balanceCard(req: Request, res: Response) {
+  const { id }: { id: number } = res.locals.cardId;
+  const balanceData = await cardServices.balanceService(id);
+  return res.status(200).send(balanceData);
 }

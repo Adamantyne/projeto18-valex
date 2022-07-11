@@ -29,3 +29,20 @@ export function encryptValue(value: string, type: "encrypt" | "decrypt") {
     return cryptr.decrypt(value);
   }
 }
+
+export function validateQueryParams(values:any[], names: string[]): string[] {
+  const response = [];
+  for (let i = 0; i < values.length; i++) {
+    if (!values[i] || typeof values[i] !== "string") {
+      throw {
+        type: "Unprocessable Entity",
+        message: `${names[i]} required ${
+          typeof values[i] !== "string" ? "as string" : ""
+        }`,
+      };
+    }else{
+      response.push(values[i]);
+    }
+  }
+  return response;
+}

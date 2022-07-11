@@ -1,11 +1,10 @@
 import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcrypt";
 
-import { findById, TransactionTypes } from "../repositories/cardRepository.js";
+import { TransactionTypes } from "../repositories/cardRepository.js";
 import cardServices from "../services/cardServices.js";
 import employeeServices from "../services/employeeServices.js";
-
-
+import { validateQueryParams } from "../utils/cardUtuils.js";
 
 export async function postCardMiddleware(
   req: Request,
@@ -28,8 +27,6 @@ export async function postCardMiddleware(
   next();
 }
 
-
-
 export async function activeCardMiddleware(
   req: Request,
   res: Response,
@@ -47,8 +44,6 @@ export async function activeCardMiddleware(
   next();
 }
 
-
-
 export async function blobkCardMiddleware(
   req: Request,
   res: Response,
@@ -63,8 +58,6 @@ export async function blobkCardMiddleware(
   next();
 }
 
-
-
 export async function unlockCardMiddleware(
   req: Request,
   res: Response,
@@ -74,6 +67,23 @@ export async function unlockCardMiddleware(
 
   const block = false;
   await cardServices.blockService(id, password, block);
+
+  res.locals.cardId = { id };
+  next();
+}
+
+export async function balanceMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const queryData = req.query;
+
+  const [idString, password] = validateQueryParams([queryData.id, queryData.password],["id","password"]);
+  const id = parseInt(idString);
+
+  const cardData = await cardServices.validateCardId(id);
+  cardServices.authCardValidate(cardData, password);
 
   res.locals.cardId = { id };
   next();
