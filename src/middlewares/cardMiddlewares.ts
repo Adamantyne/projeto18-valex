@@ -1,11 +1,11 @@
-import dayjs from "dayjs";
 import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcrypt";
 
 import { findById, TransactionTypes } from "../repositories/cardRepository.js";
 import cardServices from "../services/cardServices.js";
 import employeeServices from "../services/employeeServices.js";
-import { encryptValue } from "../utils/cardUtuils.js";
+
+
 
 export async function postCardMiddleware(
   req: Request,
@@ -28,6 +28,8 @@ export async function postCardMiddleware(
   next();
 }
 
+
+
 export async function activeCardMiddleware(
   req: Request,
   res: Response,
@@ -37,10 +39,42 @@ export async function activeCardMiddleware(
     req.body;
 
   const cardData = await cardServices.validateCardId(id);
-  await cardServices.activeCardValidate(cardData,CVV);
-  
+  cardServices.activeCardValidate(cardData, CVV);
+
   const saltRounds = 5;
-  const encryptPassword = bcrypt.hashSync(password,saltRounds);
-  res.locals.updateData = {id,encryptPassword}
+  const encryptPassword = bcrypt.hashSync(password, saltRounds);
+  res.locals.updateData = { id, encryptPassword };
+  next();
+}
+
+
+
+export async function blobkCardMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const { id, password }: { id: number; password: string } = req.body;
+
+  const block = true;
+  await cardServices.blockService(id, password, block);
+
+  res.locals.cardId = { id };
+  next();
+}
+
+
+
+export async function unlockCardMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const { id, password }: { id: number; password: string } = req.body;
+
+  const block = false;
+  await cardServices.blockService(id, password, block);
+
+  res.locals.cardId = { id };
   next();
 }

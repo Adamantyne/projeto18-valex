@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import dayjs from "dayjs";
+import bcrypt from "bcrypt";
 
 dotenv.config();
 
@@ -12,6 +13,8 @@ import {
 } from "../repositories/cardRepository.js";
 import { formatedData, encryptValue } from "../utils/cardUtuils.js";
 
+
+
 async function postCardService(
   fullName: string,
   employeeId: number,
@@ -21,7 +24,6 @@ async function postCardService(
   const expirationDate = formatedData("expiration date");
   const cardNumber = formatedData("card number");
   const CVV = formatedData("CVV");
-  console.log(CVV);
   const cryptCVV = encryptValue(CVV, "encrypt");
 
   await insert({
@@ -37,6 +39,8 @@ async function postCardService(
   });
 }
 
+
+
 function formattingCardName(name: string) {
   const names: string[] = name.split(" ");
   let middleName = "";
@@ -50,6 +54,8 @@ function formattingCardName(name: string) {
   return formattedName;
 }
 
+
+
 async function validateCardType(type: TransactionTypes, employeeId: number) {
   const card = await findByTypeAndEmployeeId(type, employeeId);
   if (card) {
@@ -60,6 +66,8 @@ async function validateCardType(type: TransactionTypes, employeeId: number) {
   }
   return;
 }
+
+
 
 async function validateCardId(id: number) {
   const cardData = await findById(id);
@@ -72,7 +80,9 @@ async function validateCardId(id: number) {
   return cardData;
 }
 
-async function activeCardValidate(cardData: Card, CVV: string) {
+
+
+function activeCardValidate(cardData: Card, CVV: string) {
   const cardCVV = encryptValue(cardData.securityCode, "decrypt");
   const todayDate = dayjs().format("MM/YY");
   if (
@@ -84,7 +94,7 @@ async function activeCardValidate(cardData: Card, CVV: string) {
     if (CVV !== cardCVV) errorMessage += `invalid CVV /`;
     if (cardData.password) errorMessage += `card already active /`;
     if (todayDate > cardData.expirationDate)
-      errorMessage += `card already expired /`;
+      errorMessage = `card already expired /`;
 
     throw {
       type: "Unauthorized",
@@ -94,12 +104,52 @@ async function activeCardValidate(cardData: Card, CVV: string) {
   return;
 }
 
+
+
+function blockCardValidate(
+  cardData: Card,
+  password: string,
+  block: boolean
+) {
+  const validPassword = bcrypt.compareSync(password, cardData.password);
+  const todayDate = dayjs().format("MM/YY");
+  if (
+    cardData.isBlocked === block ||
+    !validPassword ||
+    todayDate > cardData.expirationDate
+  ) {
+    let errorMessage = "";
+    if (cardData.isBlocked === block)
+      errorMessage += `card already ${block ? "blocked" : "unlocked"} /`;
+    if (todayDate > cardData.expirationDate)
+      errorMessage += `card already expired /`;
+    if (!validPassword) errorMessage = `invalid password /`;
+
+    throw {
+      type: "Unauthorized",
+      message: errorMessage,
+    };
+  }
+  return;
+}
+
+
+
+async function blockService(id:number,password:string,block:boolean) {
+  const cardData = await cardServices.validateCardId(id);
+  cardServices.blockCardValidate(cardData, password,block);
+}
+
+
+
 const cardServices = {
   validateCardType,
   postCardService,
   formattingCardName,
   validateCardId,
   activeCardValidate,
+  blockCardValidate,
+  blockService
 };
 
 export default cardServices;

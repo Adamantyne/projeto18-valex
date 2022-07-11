@@ -20,3 +20,19 @@ export async function activeCard(req: Request, res: Response) {
 
   return res.status(201).send("card actived");
 }
+
+export async function blockCard(req: Request, res: Response) {
+  const { id }: { id: number } = res.locals.cardId;
+  
+  await update(id, { isBlocked: true });
+
+  return res.status(201).send("card blocked");
+}
+
+export async function unlockCard(req: Request, res: Response) {
+  const { id }: { id: number } = res.locals.cardId;
+  
+  await update(id, { isBlocked: false });
+
+  return res.status(201).send("card unlocked");
+}

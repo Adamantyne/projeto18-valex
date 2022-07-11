@@ -14,3 +14,8 @@ export const activeCardSchema = Joi.object({
   CVV: Joi.string().length(3).pattern(cadrDatadMask).required(),
   password: Joi.string().length(4).pattern(cadrDatadMask).required(),
 });
+
+export const blockCardSchema = Joi.object({
+  id: Joi.number().required(),
+  password: Joi.string().length(4).pattern(cadrDatadMask).required(),
+});
