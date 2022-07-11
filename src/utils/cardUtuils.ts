@@ -1,7 +1,11 @@
 import { faker } from "@faker-js/faker";
+import dotenv from "dotenv";
+import Cryptr from "cryptr";
 import dayjs from "dayjs";
 
 import cardServices from "../services/cardServices.js";
+
+dotenv.config();
 
 export function formatedData(typeData: string, data?: string): string {
   if (typeData === "card name") {
@@ -14,5 +18,14 @@ export function formatedData(typeData: string, data?: string): string {
     return faker.finance.creditCardNumber(cardNumberMask);
   } else if (typeData === "CVV") {
     return faker.finance.creditCardCVV();
+  }
+}
+
+export function encryptValue(value: string, type: "encrypt" | "decrypt") {
+  const cryptr = new Cryptr(process.env.CRYPTR_KEY);
+  if (type === "encrypt") {
+    return cryptr.encrypt(value);
+  } else if (type === "decrypt") {
+    return cryptr.decrypt(value);
   }
 }

@@ -1,25 +1,28 @@
-import Cryptr from "cryptr";
 import dotenv from "dotenv";
+import dayjs from "dayjs";
+
 dotenv.config();
 
 import {
   findByTypeAndEmployeeId,
   TransactionTypes,
   insert,
+  findById,
+  Card,
 } from "../repositories/cardRepository.js";
-import { formatedData } from "../utils/cardUtuils.js";
+import { formatedData, encryptValue } from "../utils/cardUtuils.js";
 
 async function postCardService(
   fullName: string,
   employeeId: number,
   type: TransactionTypes
 ) {
-  const cryptr = new Cryptr(process.env.CRYPTR_KEY);
   const formatedName = formatedData("card name", fullName);
   const expirationDate = formatedData("expiration date");
   const cardNumber = formatedData("card number");
   const CVV = formatedData("CVV");
-  const cryptCVV = cryptr.encrypt(CVV);
+  console.log(CVV);
+  const cryptCVV = encryptValue(CVV, "encrypt");
 
   await insert({
     employeeId,
@@ -58,6 +61,45 @@ async function validateCardType(type: TransactionTypes, employeeId: number) {
   return;
 }
 
-const cardServices = { validateCardType, postCardService, formattingCardName };
+async function validateCardId(id: number) {
+  const cardData = await findById(id);
+  if (!cardData) {
+    throw {
+      type: "Not Found",
+      message: "id card not found",
+    };
+  }
+  return cardData;
+}
+
+async function activeCardValidate(cardData: Card, CVV: string) {
+  const cardCVV = encryptValue(cardData.securityCode, "decrypt");
+  const todayDate = dayjs().format("MM/YY");
+  if (
+    CVV !== cardCVV ||
+    cardData.password ||
+    todayDate > cardData.expirationDate
+  ) {
+    let errorMessage = "";
+    if (CVV !== cardCVV) errorMessage += `invalid CVV /`;
+    if (cardData.password) errorMessage += `card already active /`;
+    if (todayDate > cardData.expirationDate)
+      errorMessage += `card already expired /`;
+
+    throw {
+      type: "Unauthorized",
+      message: errorMessage,
+    };
+  }
+  return;
+}
+
+const cardServices = {
+  validateCardType,
+  postCardService,
+  formattingCardName,
+  validateCardId,
+  activeCardValidate,
+};
 
 export default cardServices;
