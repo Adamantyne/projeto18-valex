@@ -36,6 +36,7 @@ async function postCardService(
     isBlocked: true,
     type,
   });
+  return CVV;
 }
 
 
