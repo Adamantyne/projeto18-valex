@@ -2,8 +2,9 @@ import dotenv from "dotenv";
 import dayjs from "dayjs";
 import bcrypt from "bcrypt";
 
-import { findByCardId as findPayments} from "../repositories/paymentRepository.js";
-import { findByCardId as findRecharge} from "../repositories/rechargeRepository.js";
+import { findByCardId as findPayments } from "../repositories/paymentRepository.js";
+import { findByCardId as findRecharge } from "../repositories/rechargeRepository.js";
+import cardValidations from "./cardValidations.js"
 
 dotenv.config();
 
@@ -16,8 +17,6 @@ import {
 } from "../repositories/cardRepository.js";
 import { formatedData, encryptValue } from "../utils/cardUtuils.js";
 
-
-
 async function postCardService(
   fullName: string,
   employeeId: number,
@@ -28,6 +27,7 @@ async function postCardService(
   const cardNumber = formatedData("card number");
   const CVV = formatedData("CVV");
   const cryptCVV = encryptValue(CVV, "encrypt");
+  console.log(CVV);
 
   await insert({
     employeeId,
@@ -42,8 +42,6 @@ async function postCardService(
   });
 }
 
-
-
 function formattingCardName(name: string) {
   const names: string[] = name.split(" ");
   let middleName = "";
@@ -57,47 +55,12 @@ function formattingCardName(name: string) {
   return formattedName;
 }
 
-
-
-async function validateCardType(type: TransactionTypes, employeeId: number) {
-  const card = await findByTypeAndEmployeeId(type, employeeId);
-  if (card) {
-    throw {
-      type: "Unauthorized",
-      message: `employee already has a card of the type ${type}`,
-    };
-  }
-  return;
-}
-
-
-
-async function validateCardId(id: number) {
-  const cardData = await findById(id);
-  if (!cardData) {
-    throw {
-      type: "Not Found",
-      message: "id card not found",
-    };
-  }
-  return cardData;
-}
-
-
-
 function activeCardValidate(cardData: Card, CVV: string) {
   const cardCVV = encryptValue(cardData.securityCode, "decrypt");
-  const todayDate = dayjs().format("MM/YY");
-  if (
-    CVV !== cardCVV ||
-    cardData.password ||
-    todayDate > cardData.expirationDate
-  ) {
+  if (CVV !== cardCVV || cardData.password) {
     let errorMessage = "";
     if (CVV !== cardCVV) errorMessage += `invalid CVV /`;
     if (cardData.password) errorMessage += `card already active /`;
-    if (todayDate > cardData.expirationDate)
-      errorMessage = `card already expired /`;
 
     throw {
       type: "Unauthorized",
@@ -107,18 +70,10 @@ function activeCardValidate(cardData: Card, CVV: string) {
   return;
 }
 
-
-
-function authCardValidate(
-  cardData: Card,
-  password: string
-) {
+function authCardValidate(cardData: Card, password: string) {
   const validPassword = bcrypt.compareSync(password, cardData.password);
   const todayDate = dayjs().format("MM/YY");
-  if (
-    !validPassword ||
-    todayDate > cardData.expirationDate
-  ) {
+  if (!validPassword || todayDate > cardData.expirationDate) {
     let errorMessage = "";
     if (todayDate > cardData.expirationDate)
       errorMessage = `card already expired /`;
@@ -132,57 +87,41 @@ function authCardValidate(
   return;
 }
 
-function blockCardValidate(cardData: Card,block: boolean){
-  if (
-    cardData.isBlocked === block
-  ) {
-
-    throw {
-      type: "Unauthorized",
-      message: `card already ${block ? "blocked" : "unlocked"} /`,
-    };
-  }
-}
-
-async function blockService(id:number,password:string,block:boolean) {
-  const cardData = await validateCardId(id);
+async function blockService(id: number, password: string, block: boolean) {
+  const cardData = await cardValidations.validateCardId(id);
+  cardValidations.validateCardActive(cardData);
   authCardValidate(cardData, password);
-  blockCardValidate(cardData,block);
+  cardValidations.validateCardExpiration(cardData);
+  cardValidations.blockCardValidate(cardData, block);
 }
 
-
-
-async function balanceService(id:number) {
-
+async function balanceService(id: number) {
   const transactions = await findPayments(id);
   const recharges = await findRecharge(id);
 
-  let balanceIn=0;
-  let balanceOut=0;
+  let balanceIn = 0;
+  let balanceOut = 0;
 
-  transactions.forEach(transaction => {
+  transactions.forEach((transaction) => {
     balanceOut -= transaction.amount;
   });
-  recharges.forEach(recharge => {
+  recharges.forEach((recharge) => {
     balanceIn += recharge.amount;
   });
-  
+
   const balance = balanceIn - balanceOut;
 
-  return{
-    balance,transactions,recharges
-  }
+  return {
+    balance,
+    transactions,
+    recharges,
+  };
 }
 
-
-
 const cardServices = {
-  validateCardType,
   postCardService,
   formattingCardName,
-  validateCardId,
   activeCardValidate,
-  blockCardValidate,
   authCardValidate,
   blockService,
   balanceService

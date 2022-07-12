@@ -38,7 +38,7 @@ export function validateQueryParams(values:any[], names: string[]): string[] {
         type: "Unprocessable Entity",
         message: `${names[i]} required ${
           typeof values[i] !== "string" ? "as string" : ""
-        }`,
+        } in query string`,
       };
     }else{
       response.push(values[i]);

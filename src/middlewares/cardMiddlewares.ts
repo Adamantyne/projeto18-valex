@@ -5,6 +5,7 @@ import { TransactionTypes } from "../repositories/cardRepository.js";
 import cardServices from "../services/cardServices.js";
 import employeeServices from "../services/employeeServices.js";
 import { validateQueryParams } from "../utils/cardUtuils.js";
+import cardValidations from "../services/cardValidations.js";
 
 export async function postCardMiddleware(
   req: Request,
@@ -21,11 +22,12 @@ export async function postCardMiddleware(
     apiKey,
     employeeId
   );
-  await cardServices.validateCardType(type, employeeId);
+  await cardValidations.validateCardType(type, employeeId);
 
   res.locals.userData = employeeInfos;
   next();
 }
+
 
 export async function activeCardMiddleware(
   req: Request,
@@ -35,7 +37,8 @@ export async function activeCardMiddleware(
   const { id, CVV, password }: { id: number; CVV: string; password: string } =
     req.body;
 
-  const cardData = await cardServices.validateCardId(id);
+  const cardData = await cardValidations.validateCardId(id);
+  cardValidations.validateCardExpiration(cardData);
   cardServices.activeCardValidate(cardData, CVV);
 
   const saltRounds = 5;
@@ -82,7 +85,7 @@ export async function balanceMiddleware(
   const [idString, password] = validateQueryParams([queryData.id, queryData.password],["id","password"]);
   const id = parseInt(idString);
 
-  const cardData = await cardServices.validateCardId(id);
+  const cardData = await cardValidations.validateCardId(id);
   cardServices.authCardValidate(cardData, password);
 
   res.locals.cardId = { id };
