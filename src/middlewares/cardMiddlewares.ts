@@ -28,7 +28,6 @@ export async function postCardMiddleware(
   next();
 }
 
-
 export async function activeCardMiddleware(
   req: Request,
   res: Response,
@@ -47,8 +46,7 @@ export async function activeCardMiddleware(
   next();
 }
 
-
-export async function blobkCardMiddleware(
+export async function blockCardMiddleware(
   req: Request,
   res: Response,
   next: NextFunction
@@ -61,7 +59,6 @@ export async function blobkCardMiddleware(
   res.locals.cardId = { id };
   next();
 }
-
 
 export async function unlockCardMiddleware(
   req: Request,
@@ -77,7 +74,6 @@ export async function unlockCardMiddleware(
   next();
 }
 
-
 export async function balanceMiddleware(
   req: Request,
   res: Response,
@@ -85,12 +81,32 @@ export async function balanceMiddleware(
 ) {
   const queryData = req.query;
 
-  const [idString, password] = validateQueryParams([queryData.id, queryData.password],["id","password"]);
+  const [idString, password] = validateQueryParams(
+    [queryData.id, queryData.password],
+    ["id", "password"]
+  );
   const id = parseInt(idString);
 
   const cardData = await cardValidations.validateCardId(id);
   cardServices.authCardValidate(cardData, password);
 
   res.locals.cardId = { id };
+  next();
+}
+
+export function employeeCardsMiddleware(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const {employeeId} = req.params;
+  console.log(employeeId)
+  if(!employeeId){
+    throw{
+      type:"Unprocessable Entity",
+      message:"employeeId required as req.params"
+    }
+  }
+  res.locals.employeeId=employeeId;
   next();
 }

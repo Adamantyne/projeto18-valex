@@ -9,6 +9,11 @@ export interface Employee {
   companyKey: string;
 }
 
+export interface EmployeeCards{
+  id:number,
+  type:string
+}
+
 export async function findById(id: number) {
   const result = await connection.query<Employee, [number]>(
     `SELECT employees.*,companies.name,companies."apiKey" as "companyKey"
@@ -19,4 +24,15 @@ export async function findById(id: number) {
   );
 
   return result.rows[0];
+}
+
+export async function findCardsById(id: number) {
+  const result = await connection.query<EmployeeCards, [number]>(
+    `SELECT cards.id,cards.type FROM employees
+    JOIN cards ON employees.id = cards."employeeId"
+    WHERE employees.id=$1;`,
+    [id]
+  );
+  console.log(result);
+  return result.rows;
 }

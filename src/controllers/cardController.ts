@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 
 import { TransactionTypes, update } from "../repositories/cardRepository.js";
 import cardServices from "../services/cardServices.js";
+import { findCardsById } from "../repositories/employeeRepository.js";
 
 export async function postCard(req: Request, res: Response) {
   const { fullName, id: employeeId }: { fullName: string; id: number } =
@@ -46,4 +47,15 @@ export async function balanceCard(req: Request, res: Response) {
   const { id }: { id: number } = res.locals.cardId;
   const balanceData = await cardServices.balanceService(id);
   return res.status(200).send(balanceData);
+}
+
+export async function employeeCards(req: Request, res: Response) {
+  const id = res.locals.employeeId;
+  console.log(id)
+  const cards = await findCardsById(id);
+  let stringOfCards = "";
+  cards.forEach(card=>{
+    stringOfCards+=`id: ${card.id}, type: ${card.type} / `
+  });
+  return res.status(200).send(`cards of employee ${id}: ${stringOfCards}`);
 }

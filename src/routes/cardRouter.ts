@@ -6,6 +6,7 @@ import {
   blockCard,
   unlockCard,
   balanceCard,
+  employeeCards
 } from "../controllers/cardController.js";
 import {
   postCardSchema,
@@ -15,9 +16,10 @@ import {
 import {
   postCardMiddleware,
   activeCardMiddleware,
-  blobkCardMiddleware,
+  blockCardMiddleware,
   unlockCardMiddleware,
   balanceMiddleware,
+  employeeCardsMiddleware
 } from "../middlewares/cardMiddlewares.js";
 import validateSchema from "../middlewares/schemaValidator.js";
 
@@ -29,24 +31,30 @@ cardRouter.post(
   postCardMiddleware,
   postCard
 );
+
 cardRouter.post(
   "/activate-card",
   validateSchema(activeCardSchema),
   activeCardMiddleware,
   activeCard
 );
+
 cardRouter.post(
   "/block-card",
   validateSchema(blockCardSchema),
-  blobkCardMiddleware,
+  blockCardMiddleware,
   blockCard
 );
+
 cardRouter.post(
   "/unlock-card",
   validateSchema(blockCardSchema),
   unlockCardMiddleware,
   unlockCard
 );
+
 cardRouter.get("/balance-card", balanceMiddleware, balanceCard);
+
+cardRouter.get("/employee-cards/:employeeId", employeeCardsMiddleware, employeeCards);
 
 export default cardRouter;
