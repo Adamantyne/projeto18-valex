@@ -17,5 +17,5 @@ export default async function handleError(
     return res.status(404).send(error.message);
   }
   console.log(error);
-  return res.sendStatus(500);
+  return res.status(500).send(error);
 }
