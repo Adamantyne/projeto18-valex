@@ -47,6 +47,7 @@ export async function activeCardMiddleware(
   next();
 }
 
+
 export async function blobkCardMiddleware(
   req: Request,
   res: Response,
@@ -61,6 +62,7 @@ export async function blobkCardMiddleware(
   next();
 }
 
+
 export async function unlockCardMiddleware(
   req: Request,
   res: Response,
@@ -74,6 +76,7 @@ export async function unlockCardMiddleware(
   res.locals.cardId = { id };
   next();
 }
+
 
 export async function balanceMiddleware(
   req: Request,

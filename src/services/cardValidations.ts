@@ -1,17 +1,12 @@
-import dotenv from "dotenv";
 import dayjs from "dayjs";
-
 
 import {
   findByTypeAndEmployeeId,
   TransactionTypes,
-  insert,
   findById,
   Card,
 } from "../repositories/cardRepository.js";
-import { formatedData, encryptValue } from "../utils/cardUtuils.js";
 
-dotenv.config();
 
 async function validateCardType(type: TransactionTypes, employeeId: number) {
   const card = await findByTypeAndEmployeeId(type, employeeId);
@@ -24,6 +19,7 @@ async function validateCardType(type: TransactionTypes, employeeId: number) {
   return;
 }
 
+
 async function validateCardId(id: number) {
   const cardData = await findById(id);
   if (!cardData) {
@@ -35,6 +31,7 @@ async function validateCardId(id: number) {
   return cardData;
 }
 
+
 function validateCardUnlock(isBlocked: boolean) {
   if (isBlocked) {
     throw {
@@ -44,6 +41,7 @@ function validateCardUnlock(isBlocked: boolean) {
   }
 }
 
+
 function validateCardActive(cardData: Card) {
   if (!cardData.password) {
     throw {
@@ -52,6 +50,7 @@ function validateCardActive(cardData: Card) {
     };
   }
 }
+
 
 function validateCardExpiration(cardData: Card) {
   const todayDate = dayjs().format("MM/YY");
@@ -64,6 +63,7 @@ function validateCardExpiration(cardData: Card) {
   return;
 }
 
+
 function blockCardValidate(cardData: Card, block: boolean) {
   if (cardData.isBlocked === block) {
     throw {
@@ -72,6 +72,7 @@ function blockCardValidate(cardData: Card, block: boolean) {
     };
   }
 }
+
 
 const cardValidations = {
   validateCardType,

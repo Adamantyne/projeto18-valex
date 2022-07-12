@@ -1,4 +1,3 @@
-import dotenv from "dotenv";
 import dayjs from "dayjs";
 import bcrypt from "bcrypt";
 
@@ -6,13 +5,10 @@ import { findByCardId as findPayments } from "../repositories/paymentRepository.
 import { findByCardId as findRecharge } from "../repositories/rechargeRepository.js";
 import cardValidations from "./cardValidations.js"
 
-dotenv.config();
 
 import {
-  findByTypeAndEmployeeId,
   TransactionTypes,
   insert,
-  findById,
   Card,
 } from "../repositories/cardRepository.js";
 import { formatedData, encryptValue } from "../utils/cardUtuils.js";
@@ -27,7 +23,7 @@ async function postCardService(
   const cardNumber = formatedData("card number");
   const CVV = formatedData("CVV");
   const cryptCVV = encryptValue(CVV, "encrypt");
-  console.log(CVV);
+  //console.log(CVV);
 
   await insert({
     employeeId,
@@ -42,6 +38,7 @@ async function postCardService(
   });
 }
 
+
 function formattingCardName(name: string) {
   const names: string[] = name.split(" ");
   let middleName = "";
@@ -54,6 +51,7 @@ function formattingCardName(name: string) {
   const formattedName = `${names[0]} ${middleName} ${names[names.length - 1]}`;
   return formattedName;
 }
+
 
 function activeCardValidate(cardData: Card, CVV: string) {
   const cardCVV = encryptValue(cardData.securityCode, "decrypt");
@@ -69,6 +67,7 @@ function activeCardValidate(cardData: Card, CVV: string) {
   }
   return;
 }
+
 
 function authCardValidate(cardData: Card, password: string) {
   const validPassword = bcrypt.compareSync(password, cardData.password);
@@ -87,6 +86,7 @@ function authCardValidate(cardData: Card, password: string) {
   return;
 }
 
+
 async function blockService(id: number, password: string, block: boolean) {
   const cardData = await cardValidations.validateCardId(id);
   cardValidations.validateCardActive(cardData);
@@ -94,6 +94,7 @@ async function blockService(id: number, password: string, block: boolean) {
   cardValidations.validateCardExpiration(cardData);
   cardValidations.blockCardValidate(cardData, block);
 }
+
 
 async function balanceService(id: number) {
   const transactions = await findPayments(id);
@@ -117,6 +118,7 @@ async function balanceService(id: number) {
     recharges,
   };
 }
+
 
 const cardServices = {
   postCardService,

@@ -33,7 +33,6 @@ export async function postPaymentMiddleware(
     };
   }
   
-
   res.locals.paymentData = body;
   next();
 }

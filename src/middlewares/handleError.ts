@@ -6,7 +6,7 @@ export default async function handleError(
   res: Response,
   next: NextFunction
 ) {
-  console.log(error);
+  //console.log(error);
   if (error.type === "Unprocessable Entity") {
     return res.status(422).send(error.message);
   } else if (error.type === "Unauthorized") {

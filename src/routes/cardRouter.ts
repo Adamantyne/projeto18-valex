@@ -41,14 +41,12 @@ cardRouter.post(
   blobkCardMiddleware,
   blockCard
 );
-
 cardRouter.post(
   "/unlock-card",
   validateSchema(blockCardSchema),
   unlockCardMiddleware,
   unlockCard
 );
-
 cardRouter.get("/balance-card", balanceMiddleware, balanceCard);
 
 export default cardRouter;
