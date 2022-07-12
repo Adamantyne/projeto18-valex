@@ -16,6 +16,6 @@ export default async function handleError(
   }else if (error.type === "Not Found") {
     return res.status(404).send(error.message);
   }
-
+  console.log(error);
   return res.sendStatus(500);
 }
