@@ -50,8 +50,8 @@ export async function balanceCard(req: Request, res: Response) {
 }
 
 export async function employeeCards(req: Request, res: Response) {
-  const id = res.locals.employeeId;
-  console.log(id)
+  const id:number = res.locals.employeeId;
+  
   const cards = await findCardsById(id);
   let stringOfCards = "";
   cards.forEach(card=>{

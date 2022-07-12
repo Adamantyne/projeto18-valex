@@ -33,6 +33,6 @@ export async function findCardsById(id: number) {
     WHERE employees.id=$1;`,
     [id]
   );
-  console.log(result);
+  
   return result.rows;
 }

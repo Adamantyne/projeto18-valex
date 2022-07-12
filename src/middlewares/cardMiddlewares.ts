@@ -6,6 +6,7 @@ import cardServices from "../services/cardServices.js";
 import employeeServices from "../services/employeeServices.js";
 import { validateQueryParams } from "../utils/cardUtuils.js";
 import cardValidations from "../services/cardValidations.js";
+import { cardDatadMask } from "../utils/cardUtuils.js";
 
 export async function postCardMiddleware(
   req: Request,
@@ -100,13 +101,13 @@ export function employeeCardsMiddleware(
   next: NextFunction
 ) {
   const {employeeId} = req.params;
-  console.log(employeeId)
-  if(!employeeId){
+  
+  if(!employeeId || !cardDatadMask.test(employeeId)){
     throw{
       type:"Unprocessable Entity",
       message:"employeeId required as req.params"
     }
   }
-  res.locals.employeeId=employeeId;
+  res.locals.employeeId=+employeeId;
   next();
 }
