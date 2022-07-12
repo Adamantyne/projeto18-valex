@@ -104,10 +104,10 @@ async function balanceService(id: number) {
   let balanceIn = 0;
   let balanceOut = 0;
 
-  transactions.forEach((transaction) => {
+  transactions?.forEach((transaction) => {
     balanceOut += transaction.amount;
   });
-  recharges.forEach((recharge) => {
+  recharges?.forEach((recharge) => {
     balanceIn += recharge.amount;
   });
 
