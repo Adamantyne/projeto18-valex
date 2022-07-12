@@ -35,7 +35,7 @@ async function validateCardId(id: number) {
   return cardData;
 }
 
-async function validateCardUnlock(isBlocked: boolean) {
+function validateCardUnlock(isBlocked: boolean) {
   if (isBlocked) {
     throw {
       type: "Unauthorized",
@@ -44,7 +44,7 @@ async function validateCardUnlock(isBlocked: boolean) {
   }
 }
 
-async function validateCardActive(cardData: Card) {
+function validateCardActive(cardData: Card) {
   if (!cardData.password) {
     throw {
       type: "Unauthorized",

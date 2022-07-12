@@ -7,6 +7,9 @@ import cardServices from "../services/cardServices.js";
 
 dotenv.config();
 
+export const cardDatadMask = /^[0-9]+$/;
+export const cardTypes = /^(groceries|restaurant|education|health|transport)$/; 
+
 export function formatedData(typeData: string, data?: string): string {
   if (typeData === "card name") {
     return cardServices.formattingCardName(data);
