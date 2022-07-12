@@ -89,6 +89,7 @@ export async function balanceMiddleware(
   const id = parseInt(idString);
 
   const cardData = await cardValidations.validateCardId(id);
+  cardValidations.validateCardActive(cardData);
   cardServices.authCardValidate(cardData, password);
 
   res.locals.cardId = { id };
