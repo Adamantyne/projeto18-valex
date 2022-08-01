@@ -10,7 +10,7 @@
 <br>
 <p>Nesse projeto, foi construída uma API que da suporte a um sistema de cartões de benefício, associando um cartão a um funcionário de uma empresa, além de oferecer suporte ao controle de recargas e compras desse cartão em estabelecimentos cadastrados.</p>
 
-<h1>Fluxo:</h2>
+<h2>Fluxo:</h2>
 
 <h3>Criação do cartão (post para rota "/card"):</h3>
 <p>headers: X-API-KEY: "api key da empresa cadastrada"</p>
